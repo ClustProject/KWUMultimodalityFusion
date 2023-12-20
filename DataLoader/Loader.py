@@ -115,3 +115,94 @@ def load_seedIV_data(data_dir_path: str, feature_name: str, trial: int, islabel=
 
             print("get DataLoader in session {} ... done".format(ses_idx + 1))
         return subject_feature_list
+
+
+def load_deap_data(data_dir_path: str, fname1: str, fname2: str, label_dir_path: str, n_columns=2):
+    print("*********** Load features and labels ************")
+
+    subject_feature_list1 = np.array([], dtype=float)
+    subject_feature_list2 = np.array([], dtype=float)
+    subject_label_list = np.array([], dtype=float)
+    subject_sample_counts = np.array([], dtype=int)
+
+    feature_dir_list = natsort.natsorted(os.listdir(data_dir_path))
+
+    for feature_idx, feature_dir in enumerate(feature_dir_list):
+        feature_data_dir_path = data_dir_path + feature_dir + '/'
+        file_list = natsort.natsorted(os.listdir(feature_data_dir_path))
+        print(feature_dir)
+        feature_list = np.array([], dtype=float)
+        if feature_idx == 0:
+            feature_name = fname1
+        else:
+            feature_name = fname2
+
+        for f_idx, file in enumerate(file_list):
+            print(file)
+            data = io.loadmat(feature_data_dir_path + file)
+            np_data = data[feature_name]
+
+            swap_data = np_data.transpose(1, 2, 3, 0)
+            shape = swap_data.shape
+            swap_data = swap_data.reshape((shape[0] * shape[1], shape[2], shape[3]))
+
+            if feature_list.size == 0:
+                feature_list = swap_data.copy()
+                feature_list = np.expand_dims(feature_list, axis=0)
+            else:
+                feature_list = np.vstack((feature_list, np.expand_dims(swap_data, axis=0)))
+
+        if feature_idx == 0:
+            print("get data in {} ... done".format(feature_name))
+            subject_feature_list1 = feature_list
+
+        else:
+            print("get data in {} ... done".format(feature_name))
+            subject_feature_list2 = feature_list
+
+    label_list = natsort.natsorted(os.listdir(label_dir_path))
+
+    shape2 = subject_feature_list1.shape
+    print("get label ... ", end='')
+    subject_label_list = np.zeros((shape2[0], shape2[1], n_columns))
+    for l_idx, file in enumerate(label_list):
+        print(file)
+        label = io.loadmat(label_dir_path + file)
+        np_label = label['labels'][:, :n_columns]
+        start, end = 0, 0
+        for row in np_label:
+            end += shape[1]
+            label_by_trial = np.full((shape[1], n_columns), row)
+            subject_label_list[l_idx][start:end, :] = label_by_trial
+
+            start = end
+    print("done")
+    return subject_feature_list1, subject_feature_list2, subject_label_list
+
+
+def deap_label(label_list):
+    def binary_label_generator(val):
+        if val < 5.:
+            return 0
+        else:
+            return 1
+
+    shape = label_list.shape
+    valence_values = label_list[:, 0]
+    arousal_values = label_list[:, 1]
+
+    vlc_label = np.zeros(shape[0])
+    ars_label = np.zeros(shape[0])
+
+    for i in range(shape[0]):
+        vlc_label[i] = binary_label_generator(valence_values[i])
+        ars_label[i] = binary_label_generator(arousal_values[i])
+
+    print("************* The number of samples by class ***********")
+    print("Threshold : 5.0")
+    print("low valence : {},    high valence : {}".format(np.where(vlc_label == 0)[0].shape,
+                                                          np.where(vlc_label == 1)[0].shape))
+    print("low arousal : {},    high arousal : {}".format(np.where(ars_label == 0)[0].shape,
+                                                          np.where(ars_label == 1)[0].shape))
+
+    return vlc_label, ars_label
