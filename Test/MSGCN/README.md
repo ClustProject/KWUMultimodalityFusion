@@ -1,4 +1,4 @@
-# Semi-supervised Graph Convolutional Network based Emotion Recognition using Multimodal Biosignals
+# KWUMultimodalityFusion
 #### Produced by NeuroAI Lab. @Kwangwoon Univ.
 
 생체 신호 기반 감정인식 기술은 정밀한 감정 관련 특징을 내재한 생체 신호의 특성 덕분에 높은 성능을 보여왔으나 복잡한
