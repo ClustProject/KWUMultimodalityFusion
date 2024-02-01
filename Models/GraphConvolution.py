@@ -4,7 +4,6 @@ import math
 
 class GraphConvolution(nn.Module):
     def __init__(self, in_channels, out_channels,
-                 seed=2023,
                  bias=False
                  ):
         super(GraphConvolution, self).__init__()

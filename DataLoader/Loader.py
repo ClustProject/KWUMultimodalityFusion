@@ -1,7 +1,10 @@
 import numpy as np
 import os
 import io
-
+import natsort
+import torch
+import random
+from torch_geometric.data import Data, DataLoader
 
 # EEG_band : delta, theta, alpha, beta, gamma, all = 1,2,3,4,5,None
 # Feature_name : de_LDS, PSD_LDS, etc.
@@ -116,7 +119,6 @@ def load_seedIV_data(data_dir_path: str, feature_name: str, trial: int, islabel=
             print("get DataLoader in session {} ... done".format(ses_idx + 1))
         return subject_feature_list
 
-
 def load_deap_data(data_dir_path: str, fname1: str, fname2: str, label_dir_path: str, n_columns=2):
     print("*********** Load features and labels ************")
 
@@ -206,3 +208,83 @@ def deap_label(label_list):
                                                           np.where(ars_label == 1)[0].shape))
 
     return vlc_label, ars_label
+
+
+# edge attributes are composed of edge weights, the distance between all EEG channel pairs
+def load_edge_information(pdc_dir_path, sub_name, pdc_var_name, n_channels, n_trials, n_sessions, n_subjects):
+    file_list = os.listdir(pdc_dir_path)
+
+    edge_index_list = []
+    for i in range(n_channels):
+        for j in range(n_channels):
+            edge_index_list.append([i, j])
+
+    edge_attr_list = []
+    session_edge_attr_list = []
+    sub_idx = 0
+    for i, file in enumerate(file_list):
+        trial_edge_attr_list = []
+        pdcs = io.loadmat(pdc_dir_path + file)
+        pdc_name = sub_name[sub_idx] + pdc_var_name
+        for trial_idx in range(1, n_trials + 1):
+            edge_attr = []
+            pdc = pdcs[pdc_name + str(trial_idx)][:, :]
+            for k in range(n_channels):
+                for l in range(n_channels):
+                    if k == l:
+                        edge_attr.append(0)
+                    else:
+                        edge_attr.append(pdc[k][l])
+
+            trial_edge_attr_list.append(edge_attr)
+        session_edge_attr_list.append(trial_edge_attr_list)
+        if (i + 1) % 3 == 0:
+            sub_idx += 1
+            edge_attr_list.append(session_edge_attr_list)
+            session_edge_attr_list = []
+
+    return edge_index_list, edge_attr_list
+
+
+# Graph Representation
+def get_graph_data(subject_data, subject_label, edge_index_list, edge_attr_list, num_train_trials, batch_size):
+    edge_index = torch.tensor(edge_index_list, dtype=torch.long)
+    train_loader, test_loader = [], []
+
+    num_subjects = len(subject_data)
+    num_sessions = len(subject_data[0])
+    num_trials = len(subject_data[0][0])
+
+    for subject in range(num_subjects):
+        train_dataset, test_dataset = [], []
+        for session in range(num_sessions):
+            for trial in range(num_trials):
+                data_list = []
+                trial_data = subject_data[subject][session][
+                    trial]  # trial_data = [62][about 240][1or5] = [nodes][trial time][EEG band(s)]
+                blocks = len(trial_data[
+                                 1])  # about 240(240 sec, 4minutes), 'blocks' is number of blocks which is the same as a trial time
+                edge_attr = torch.tensor(edge_attr_list[subject][session][trial], dtype=torch.float)
+                for block_idx in range(blocks):
+                    # if using features of all frequency bands,
+                    # node_feature = [delta, theta, alpha, beta, gamma]
+                    data_sample = torch.tensor(trial_data[:, block_idx, :],
+                                               dtype=torch.float)  # data_sample = [62][5] = [nodes, node_features(EEG band(s)]
+                    data_label = torch.tensor(subject_label[trial], dtype=torch.long)  # data_label [0,2]
+                    data_list.append(
+                        Data(x=data_sample, edge_index=edge_index.t().contiguous(), edge_attr=edge_attr, y=data_label))
+                if trial < num_train_trials:
+                    train_dataset.extend(data_list)
+                else:
+                    test_dataset.extend(data_list)
+
+        random.shuffle(train_dataset)
+        random.shuffle(test_dataset)
+
+        batch_train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
+        batch_test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+        train_loader.append(batch_train_loader)
+        test_loader.append(batch_test_loader)
+        print('loading' + str(subject))
+    print("\nTrain dataset length: {}, \tTest dataset legnth: {}".format(len(train_dataset), len(test_dataset)))
+    return train_loader, test_loader

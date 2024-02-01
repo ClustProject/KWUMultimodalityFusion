@@ -1,6 +1,9 @@
 import torch.nn.functional as F
 import torch.nn as nn
 import torch
+from .GraphEncoder import GraphConvolutionalEncoder
+from .GraphConvolution import GraphConvolution
+from typing import Optional
 
 class GRACE(nn.Module):
     def __init__(self, encoder: GraphConvolutionalEncoder, num_in: int, num_hidden: int, num_proj_hidden: int, num_out: int,

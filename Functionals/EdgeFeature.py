@@ -1,4 +1,4 @@
-from MachineLearning import kneighbors
+from .MachineLearning import kneighbors
 import numpy as np
 import cupy as cp
 
@@ -22,16 +22,16 @@ def distance_matrix(f1):
 
 
 def ssm_construction(feature_list, length, k):
-    print("\n********** SSM construction start ***********")
+    #print("\n********** SSM construction start ***********")
     ssm = np.zeros((length, length), dtype='float64')
     normalized_sparse_ssm = np.zeros((length, length), dtype='float64')
 
-    print("\nDistance matrix construction start...")
+    #print("\nDistance matrix construction start...")
     dm = distance_matrix(feature_list)
     scaled_distance_mean = -dm.mean() * 0.05
     neighbors = kneighbors(dm, length, k)
-    print("Done")
-    print("\nSparse ssm and normalized sparse ssm construction start...")
+    #print("Done")
+    #print("\nSparse ssm and normalized sparse ssm construction start...")
     # construct sparse_ssm
     for i in range(length):
         ith_neigh = neighbors[i]
@@ -41,7 +41,7 @@ def ssm_construction(feature_list, length, k):
         if ssm_sum != 0:
             normalized_sparse_ssm[i][ith_neigh] = ssm_elements / ssm_sum
         normalized_sparse_ssm[i][i] = 0.5
-    print("Done\n")
+    #print("Done\n")
 
     trium = np.triu(normalized_sparse_ssm, k=1)
     normalized_sparse_ssm = trium + trium.T + np.diag(normalized_sparse_ssm.diagonal())
@@ -128,3 +128,4 @@ def ssm_enhancement(fused_ssm, k2, t2, rweight):
 
     essm = process_diffusion(fused_ssm, dfssm, i_neigh, j_neigh, neighbors, k2, t2, rweight, length)
     return essm
+

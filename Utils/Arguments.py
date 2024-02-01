@@ -1,13 +1,10 @@
 """ KWUAnalysisModels Utility Package. """
 import easydict
-class __args:
-    def __init__(self):
-        self._args = self._args
 
-        try:
-            _ = self._args.bus_id
-        except:
-            print("Initialization Error: Set the args first.")
+
+class _args():
+    def __init__(self):
+        self._args = None
 
     def init_args(self):
         self._args = {}
@@ -20,27 +17,27 @@ class __args:
         return
 
 
-class seed_args(__args):
+class seed_args(_args):
     def __init__(self):
         super().__init__()
         self._args = None
-        self.init_args()
+        self._init_args()
 
-    def init_args(self):
+    def _init_args(self):
         self._args = easydict.EasyDict({
             # args for setting device
             'bus_id': 'PCI_BUS_ID',
             'cuda_id': ['0', '1', '2'],
 
             # args for path
-            'os_path': '/home/neuroai/users/dhkim/eer/SSLGCN',
+            
             'seed_data_dir_path': 'dataset/seed/SEED_EEG/ExtractedFeatures/DataLoader/',
             'feature_name1': 'de_LDS',
             'feature_name2': 'psd_LDS',
             'seed_label_dir_path': 'dataset/seed/SEED_EEG/ExtractedFeatures/label/',
-            'figure_save_path': '/home/neuroai/users/dhkim/eer/SSLGCN/store/figure/',
-            'tensor_save_path': '/home/neuroai/users/dhkim/eer/SSLGCN/store/tensor/',
-            'model_save_path': '/home/neuroai/users/dhkim/eer/SSLGCN/store/model/',
+            'figure_save_path': 'store/figure/',
+            'tensor_save_path': 'store/tensor/',
+            'model_save_path': 'store/model/',
 
             # args for counts
             'n_subjects': 15,
@@ -87,21 +84,22 @@ class seed_args(__args):
             'val_split': 0.2
         })
 
-class seedIV_args(__args):
+
+class seedIV_args(_args):
     def __init__(self):
         super().__init__()
         self._args = None
 
-        self.init_args()
+        self._init_args()
 
-    def init_args(self):
-        self_args = easydict.EasyDict({
+    def _init_args(self):
+        self._args = easydict.EasyDict({
             # args for setting device
             'bus_id': 'PCI_BUS_ID',
             'cuda_id': ['0', '1', '2'],
 
             # args for path
-            'os_path': '/home/neuroai/users/dhkim/eer/SSLGCN',
+            
             'feature_name1': 'de_LDS',
             'feature_name2': 'psd_LDS',
             'seedIV_data_dir_path': 'dataset/seed_IV/eeg_feature_smooth/',
@@ -154,21 +152,22 @@ class seedIV_args(__args):
             'val_split': 0.2
         })
 
-class deap_args(__args):
+
+class deap_args(_args):
     def __init__(self):
         super().__init__()
         self._args = None
 
-        self.init_args()
+        self._init_args()
 
-    def init_args(self):
+    def _init_args(self):
         self._args = easydict.EasyDict({
             # args for setting device
             'bus_id': 'PCI_BUS_ID',
             'cuda_id': ['0', '1', '2'],
 
             # args for path
-            'os_path': '/home/neuroai/users/dhkim/eer/SSLGCN',
+            
             'feature_name1': 'DE_LDS_data',
             'feature_name2': 'PSD_LDS_data',
             'deap_label_dir_path': 'dataset/deap/data_preprocessed_matlab/',
@@ -224,21 +223,22 @@ class deap_args(__args):
             'val_split': 0.2
         })
 
-class mdeap_args(__args):
-    def __init__(self):
+
+class mdeap_args(_args):
+    def __init__(self, ):
         super().__init__()
         self._args = None
 
-        self.init_args()
+        self._init_args()
 
-    def init_args(self):
-        self.args = easydict.EasyDict({
+    def _init_args(self):
+        self._args = easydict.EasyDict({
             # args for setting device
             'bus_id': 'PCI_BUS_ID',
             'cuda_id': ['0', '1', '2'],
 
             # args for path
-            'os_path': '/home/neuroai/users/dhkim/eer/SSLGCN',
+            
             'feature_name1': 'DE_LDS_data',
             'feature_name2': 'PSD_LDS_data',
             'deap_label_dir_path': 'dataset/deap/data_preprocessed_matlab/',

@@ -9,7 +9,7 @@ import copy
 from torch_geometric.nn.dense.linear import Linear
 import torch.nn.functional as F
 from torch_geometric.utils import softmax
-
+from .GraphConvolution import GraphConvolution
 
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model: int, max_len: int, dropout: float = .1, learnable=False):
@@ -27,7 +27,7 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x):
-        x = x + Variable(self.pe[:, :x.size(1)], requires_grad=self.learnable)
+        x = x + torch.autograd.Variable(self.pe[:, :x.size(1)], requires_grad=self.learnable)
         return self.dropout(x)
 
 class LayerNorm(nn.Module):

@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-
+import torch.nn.functional as F
 
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
@@ -101,8 +101,8 @@ def drop_features2(probability_weights, features, threshold: float = 1.):
 
 def edge_rank(edge_weights):
     weight_max = edge_weights.max()
-    weight_mean = edge_weights.mean()
-    weights = (weight_max - edge_weights) / (weight_max - edge_weights.mean())
+    edge_weights_mean = edge_weights.mean()
+    weights = (weight_max - edge_weights) / (weight_max - edge_weights_mean)
     return weights
 
 
@@ -117,3 +117,17 @@ def drop_edges2(probability_weights, edge_weights, threshold: float = 1.):
 
     return edge_weights_view
 
+def get_activation(name: str):
+    activations = {
+        'relu': F.relu,
+        'hardtanh': F.hardtanh,
+        'elu': F.elu,
+        'leakyrelu': F.leaky_relu,
+        'prelu': torch.nn.PReLU(),
+        'rrelu': F.rrelu,
+        'celu' : torch.nn.CELU(),
+        'selu' : torch.nn.SELU(),
+        'gelu' : torch.nn.GELU()
+    }
+
+    return activations[name]

@@ -1,7 +1,8 @@
 import os
 import torch
 import cupy as cp
-
+import random
+import numpy as np
 
 def setting_os_path(path):
     current_path = os.getcwd()
@@ -23,3 +24,18 @@ def get_device(bus_id, cuda_id):
     print('Count of using GPUs:', torch.cuda.device_count())
 
     return device
+
+
+def fix_random_variables(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    cp.random.seed(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)  # type: ignore
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True  # type: ignore
+    torch.backends.cudnn.benchmark = False  # type: ignore
+
+    return
+
