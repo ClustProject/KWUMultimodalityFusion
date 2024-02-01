@@ -90,5 +90,3 @@ Multimodal Semi-supervised Graph Convolutional Network (MSGCN)
 ![image](https://github.com/ClustProject/KWUAnalysisModels/assets/74770095/fddc4631-3b5f-4ffa-bb65-9630a1a1c787)
 *Graph Convolution*
 
-
-# Documentation
